@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blood Finder</title>
+
+    <meta name="theme-color" content="#dc2626" />
+    <meta name="description" content="Find blood donors quickly by blood group and city." />
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+    <div class="bg-blur bg1"></div>
+    <div class="bg-blur bg2"></div>
+
+    <nav class="navbar">
+        <div class="logo">🩸 Blood Finder</div>
+        <div class="nav-links">
+            <a href="#search-section">Find Donors</a>
+            <a href="#register-section">Register Donor</a>
+            <a href="#admin-section">Admin</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content glass">
+            <h1>Find Blood Donors Fast in Emergency</h1>
+            <p>
+                Search donors by blood group and city, check availability,
+                and connect instantly through phone or email.
+            </p>
+            <a href="#search-section" class="primary-btn">Search Donors</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Search Section -->
+        <section id="search-section" class="section glass">
+            <div class="section-header">
+                <h2>Search Blood Donors</h2>
+                <p>Real-time filtering without page reload</p>
+            </div>
+
+            <div class="filters-grid">
+                <input type="text" id="searchInput" placeholder="Search by name, area, city, blood group..." />
+
+                <select id="bloodGroupFilter">
+                    <option value="">All Blood Groups</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+
+                <select id="cityFilter">
+                    <option value="">All Cities</option>
+                </select>
+
+                <select id="availabilityFilter">
+                    <option value="">All Status</option>
+                    <option value="true">Available</option>
+                    <option value="false">Unavailable</option>
+                </select>
+
+                <select id="sortFilter">
+                    <option value="newest">Newest First</option>
+                    <option value="name_asc">Name A-Z</option>
+                    <option value="name_desc">Name Z-A</option>
+                    <option value="city_asc">City A-Z</option>
+                    <option value="available_first">Available First</option>
+                </select>
+            </div>
+
+            <div class="results-bar">
+                <div id="resultCount">0 donors found</div>
+                <button id="refreshBtn" class="secondary-btn" type="button">Refresh</button>
+            </div>
+
+            <div id="donorGrid" class="donor-grid"></div>
+        </section>
+
+        <!-- Registration Section -->
+        <section id="register-section" class="section glass">
+            <div class="section-header">
+                <h2>Register as Donor</h2>
+                <p>Add a new donor to the emergency donor network</p>
+            </div>
+
+            <form id="donorForm" class="form-grid">
+                <input type="text" id="full_name" placeholder="Full Name" required />
+
+                <select id="blood_group" required>
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+
+                <input type="text" id="city" placeholder="City" required />
+                <input type="text" id="area" placeholder="Area / Locality" />
+                <input type="text" id="phone" placeholder="Phone Number" required />
+                <input type="email" id="email" placeholder="Email Address" required />
+                <input type="number" id="age" placeholder="Age" required min="18" max="65" />
+
+                <select id="gender">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <input type="date" id="last_donated" />
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="available" checked />
+                    Currently Available
+                </label>
+
+                <button type="submit" class="primary-btn full-width">Register Donor</button>
+            </form>
+
+            <div id="formMessage" class="message-box"></div>
+        </section>
+
+        <!-- Admin Section -->
+        <section id="admin-section" class="section glass">
+            <div class="section-header">
+                <h2>Admin Panel</h2>
+                <p>Edit or delete donor records</p>
+            </div>
+
+            <div class="admin-box">
+                <div id="adminLoginBox">
+                    <div class="form-grid admin-login-grid">
+                        <input type="text" id="adminUsername" placeholder="Admin Username" />
+                        <input type="password" id="adminPassword" placeholder="Admin Password" />
+                        <button id="adminLoginBtn" class="primary-btn" type="button">Admin Login</button>
+                    </div>
+                </div>
+
+                <div id="adminLoggedInBox" class="hidden">
+                    <div class="admin-status-row">
+                        <span class="status-badge success">Admin Logged In</span>
+                        <button id="adminLogoutBtn" class="danger-btn" type="button">Logout</button>
+                    </div>
+                    <p class="admin-note">
+                        You can now edit and delete donor cards directly.
+                    </p>
+                </div>
+
+                <div id="adminMessage" class="message-box"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>Edit Donor</h3>
+                <button id="closeModalBtn" class="icon-btn" type="button">&times;</button>
+            </div>
+
+            <form id="editDonorForm" class="form-grid">
+                <input type="hidden" id="edit_id" />
+
+                <input type="text" id="edit_full_name" placeholder="Full Name" required />
+
+                <select id="edit_blood_group" required>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+
+                <input type="text" id="edit_city" placeholder="City" required />
+                <input type="text" id="edit_area" placeholder="Area / Locality" />
+                <input type="text" id="edit_phone" placeholder="Phone Number" required />
+                <input type="email" id="edit_email" placeholder="Email Address" required />
+                <input type="number" id="edit_age" placeholder="Age" required min="18" max="65" />
+
+                <select id="edit_gender">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <input type="date" id="edit_last_donated" />
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="edit_available" />
+                    Currently Available
+                </label>
+
+                <button type="submit" class="primary-btn full-width">Update Donor</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("{{ url_for('static', filename='js/sw.js') }}")
+                    .then((reg) => console.log("Service Worker registered:", reg.scope))
+                    .catch((err) => console.log("Service Worker registration failed:", err));
+            });
+        }
+    </script>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
